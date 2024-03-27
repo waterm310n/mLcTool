@@ -130,3 +130,39 @@ func TestGenerateList(t *testing.T) {
 
 	}
 }
+
+// 判断二维数组的值是否一致
+func isMatrixValSame(a, b [][]int) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	if len(a) == 0 {
+		return true
+	} else if len(a[0]) != len(b[0]) {
+		return false
+	}
+	for i := range a {
+		for j := range b {
+			if a[i][j] != b[i][j] {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+// 测试二维数组生成
+func TestGenerateMatrix(t *testing.T) {
+	testcases := []struct {
+		in   string  // 输入的矩阵
+		want [][]int // 矩阵
+	}{
+		{"[[3,4,2,1],[4,2,3,1],[2,1,0,0],[2,4,0,0]]", [][]int{{3,4,2,1}, {4,2,3,1}, {2,1,0,0}, {2,4,0,0}}},
+	}
+	for _, testcase := range testcases {
+		res := GenerateMatrix(testcase.in)
+		if !isMatrixValSame(res, testcase.want) {
+			t.Fatalf("in: %s,want:%v ,get:%v", testcase.in, testcase.want, res)
+		}
+	}
+}

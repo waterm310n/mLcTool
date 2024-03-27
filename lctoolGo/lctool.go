@@ -1,6 +1,7 @@
 package lctoolgo
 
 import (
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -63,4 +64,20 @@ func GenerateList(sequence string) *ListNode {
 		prev = cur
 	}
 	return dummyHead.Next
+}
+
+// 读取二维数组序列，生成矩阵
+func GenerateMatrix(sequence string) (matrix [][]int) {
+	reg := regexp.MustCompile(`\](,)\[`)
+	rows := reg.Split(sequence[2:len(sequence)-2], -1)
+	for _, row := range rows {
+		row := strings.Split(row, ",")
+		tempRow := make([]int,0)
+		for _, val := range row {
+			val, _ := strconv.Atoi(val)
+			tempRow = append(tempRow, val)
+		}
+		matrix = append(matrix, tempRow)
+	}
+	return
 }
