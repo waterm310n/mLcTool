@@ -1,4 +1,3 @@
-
 // ========================前缀和+哈希 计数========================
 
 // 930. 和相同的二元子数组 1592
@@ -229,6 +228,115 @@ impl Solution {
                 ans = ans.max(index as i32 - prev_index);
             }
             mp.entry(cur_sum+1).or_insert(index as i32);
+        }
+        return ans
+    }
+}
+
+//2488. 统计中位数为 K 的子数组 1999
+impl Solution {
+    pub fn count_subarrays(nums: Vec<i32>, k: i32) -> i32 {
+        // 将nums进行处理，如果值大于k，则+1，小于k则-1
+        // prefix[i]-prefix[j] == 0 或 prefix[i] - prefix[j] = 1 
+        let mut mp:HashMap<_, _> = HashMap::new();
+        let mut ans = 0;
+        let mut cur_sum = 0;
+        let mut k_pos = None;
+        mp.insert(0, 1);
+        for (index,num) in nums.iter().enumerate() {
+            if *num > k {
+                cur_sum += 1;
+            }else if *num < k{
+                cur_sum -= 1;
+            }else{
+                k_pos = Some(index);
+            }
+            if let Some(_) = k_pos { // 保证计算的区间和是包含k的
+                if let Some(cnt) = mp.get(&cur_sum){
+                    ans += cnt;
+                }
+                if let Some(cnt) = mp.get(&(cur_sum-1)){
+                    ans += cnt;
+                }
+            }else{//只记录在遇到k之前的前缀和
+                mp.entry(cur_sum).and_modify(|x| *x += 1).or_insert(1);
+            }
+        }
+        return ans;
+    }
+}
+
+// 1590. 使数组和能被 P 整除 2039
+impl Solution {
+    pub fn min_subarray(nums: Vec<i32>, p: i32) -> i32 {
+        // (total-(cur_sum-pre_sum))%p=0%p
+        // total+pre_sum=cur_sum
+        let p = p as i64;
+        let total:i64 = nums.iter().map(|x| *x as i64).sum();
+        let mut mp = HashMap::new();
+        let mut ans = nums.len() as i32;
+        let mut cur_sum = 0;
+        mp.insert((total+cur_sum)%p, -1);
+        for (index,&num) in nums.iter().enumerate() {
+            cur_sum += num as i64;
+            mp.insert((total+cur_sum)%p, index as i32);
+            if let Some(prev_index) = mp.get(&(cur_sum%p)) {
+                ans = ans.min(index as i32-prev_index);
+            }
+        }
+        if ans == nums.len() as i32{
+            return -1
+        }
+        return ans;
+    }
+}
+
+// 2845. 统计趣味子数组的数目 2073
+impl Solution {
+    pub fn count_interesting_subarrays(nums: Vec<i32>, modulo: i32, k: i32) -> i64 {
+        // nums[i] = 1 if nums[i]%modulo == k
+        // (prefix[i] - prefix[j])%modulo == k
+        // (prefix[i]-k)%modulo = prefix[j]%modulo 
+        let mut mp:HashMap<_, _> = HashMap::new();
+        let mut ans = 0;
+        let mut cur_sum = 0;
+        mp.insert(0, 1);
+        for num in nums {
+            if num%modulo == k {
+                cur_sum += 1;
+            }
+            if let Some(cnt) = mp.get(&(((cur_sum-k)%modulo+modulo)%modulo)) {
+                ans += cnt;
+            }
+            mp.entry(cur_sum).and_modify(|x| *x += 1).or_insert(1);
+        }
+        return ans
+    }
+}
+
+// 1442. 形成两个异或相等数组的三元组数目 1528,O(n)做法应该有2100，比较综合
+impl Solution {
+    pub fn count_triplets(arr: Vec<i32>) -> i32 {
+        // 思路：a == b => a^b = 0 => prefix[i]^prefix[j] == 0 => prefix[i] == prefix[j] =>找出可行区间
+        // 但是要求的是三元组，因此还需要知道下标才能计算出所有的组合。
+        // 这一部分我看了题解，道理上是通过添加total来计算，它推了这个式子m*index-(i1+i2+i3+..im)
+        // 因此我这里记录每一个下标,我的式子是sum0..m(index-i1-1)=m*index-(i1+i2+i3+..im)-1*m
+        // 通过这个方式简化了计算，所以这道题还挺综合的
+        let mut cnt_mp = HashMap::new();//统计有多少个m
+        let mut total_mp = HashMap::new();
+        let mut ans = 0;
+        let mut cur_xor_sum = 0;
+        cnt_mp.insert(0, 1);
+        total_mp.insert(0, -1);
+        for (index,num) in arr.iter().enumerate() {
+            cur_xor_sum ^= num;
+            // num不可能为0，因此prefix[i] = prefix[j]时 i >= j+2
+            if let Some(cnt) = cnt_mp.get(&cur_xor_sum) { 
+                let total = total_mp.get(&cur_xor_sum).unwrap();
+                ans += cnt*(index as i32-1)-total;
+            }
+            cnt_mp.entry(cur_xor_sum).and_modify(|x| *x += 1).or_insert(1);
+            total_mp.entry(cur_xor_sum).and_modify(|x| *x += index as i32).or_insert(index as i32);
         }
         return ans
     }

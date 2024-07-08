@@ -79,3 +79,43 @@ impl Solution {
         return arr1.into_iter().chain(arr2.into_iter()).collect();
     }
 }
+
+// 3187. 数组中的峰值 比较模板的fenwick题目，有一个技巧用来减少写if else判断
+impl Solution {
+    pub fn count_of_peaks(mut nums: Vec<i32>, queries: Vec<Vec<i32>>) -> Vec<i32> {
+        let mut fenwick = Fenwick::new(nums.len());
+        for index in 1..nums.len()-1{
+            if nums[index as usize] > nums[index as usize-1] && nums[index as usize] > nums[index as usize+1] {
+                fenwick.update(1 + index as i32, 1);
+            }
+        }
+        let mut ans = vec![];
+        for query in queries {
+            if query[0] == 1 {
+                // 查询操作
+                let (l,r) = (query[1],query[2]);
+                if r < l+2 {
+                    ans.push(0)
+                }else{
+                    ans.push(fenwick.query(l+2, r));
+                }
+            }else{
+                // 更新操作
+                let (index,val) = (query[1],query[2]);
+                // 先撤销在更新，这样不用写很多if else，代码好写,只有3次撤销，3次更新，常数复杂度
+                for index in 1.max(index-1)..(nums.len() as i32-1).min(index+2) {
+                    if nums[index as usize] > nums[index as usize-1] && nums[index as usize] > nums[index as usize+1] {
+                        fenwick.update(1 + index as i32, -1);
+                    }
+                }
+                nums[index as usize] = val;
+                for index in 1.max(index-1)..(nums.len() as i32-1).min(index+2) {
+                    if nums[index as usize] > nums[index as usize-1] && nums[index as usize] > nums[index as usize+1] {
+                        fenwick.update(1 + index as i32, 1);
+                    }
+                }
+            }
+        }
+        return ans
+    }
+}
