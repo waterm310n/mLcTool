@@ -27,7 +27,7 @@ impl UnionFind {
         }
         UnionFind {
             groups: n,
-            fa: fa,
+            fa,
         }
     }
 
@@ -45,8 +45,8 @@ impl UnionFind {
         if x.fa == y.fa { // 如果已经处在同一连通分量，直接返回
             return;
         }
+        self.fa[y.fa].size += self.fa[x.fa].size;
         self.fa[x.fa].fa = y.fa;
-        self.fa[y.fa].size += x.size;
         self.groups -= 1;
     }
 
